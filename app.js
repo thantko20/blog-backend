@@ -1,17 +1,28 @@
-"use strict";
-exports.__esModule = true;
-var express_1 = require("express");
-var dotenv_1 = require("dotenv");
-var mongoose_1 = require("mongoose");
-var authRoutes_1 = require("./routes/authRoutes");
-dotenv_1["default"].config();
-var app = (0, express_1["default"])();
-var PORT = process.env.PORT || 5000;
-var MONOGO_URI = process.env.MONGO_URI;
-mongoose_1["default"].connect(MONOGO_URI);
-var db = mongoose_1["default"].connection;
-db.on('error', function () { return console.error('Mongo DB connection error'); });
-app.use(express_1["default"].json());
-app.use(express_1["default"].urlencoded({ extended: true }));
-app.use('/api', authRoutes_1["default"]);
-app.listen(PORT, function () { return console.log("Server running at port ".concat(PORT)); });
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+
+const authRoutes = require('./routes/authRoutes');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose.connect(MONGO_URI, {
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
+});
+const db = mongoose.connection;
+
+db.on('error', () => console.error('MongoDB connection error'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.get('/', (req, res) => {
+  res.send('Hey!');
+});
+
+app.use('/api', authRoutes);
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
