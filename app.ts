@@ -2,6 +2,8 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
+import authRoutes from './routes/authRoutes';
+
 dotenv.config();
 
 const app: Express = express();
@@ -16,10 +18,8 @@ const db = mongoose.connection;
 db.on('error', () => console.error('Mongo DB connection error'));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello world!');
-});
+app.use('/api', authRoutes);
 
 app.listen(PORT, () => console.log(`Server running at port ${PORT}`));
