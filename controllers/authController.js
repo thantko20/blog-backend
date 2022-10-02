@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
-const { genHash } = require('../lib/bcrypt');
+const jwt = require('jsonwebtoken');
+const { genHash, comparePasswords } = require('../lib/bcrypt');
 const User = require('../models/userModel');
 
 exports.signUp = [
@@ -53,13 +54,38 @@ exports.signUp = [
     });
 
     await newUser.save();
+  },
+];
 
-    res.json({
-      user: {
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-      },
-    });
+exports.signIn = [
+  body('email').isEmpty().withMessage('Email must not be empty'),
+  body('password').isEmpty().withMessage('Password must not be empty'),
+  async (req, res, next) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid Email.' });
+    }
+
+    const isValidPassword = await comparePasswords(password, user.password);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid Password.' });
+    }
+
+    jwt.sign(
+      { user: { firstName: user.firstName, lastName: user.lastName, email } },
+      process.env.TOKEN_SECRET,
+      { expiresIn: '30d' },
+      (err, token) => {
+        if (err) next();
+
+        // Send back the token to frontend.
+        res.json({
+          token,
+        });
+      }
+    );
   },
 ];
