@@ -10,14 +10,14 @@ const verifyToken = (req, res, next) => {
 
   const [, token] = bearer.split(' ');
 
-  jwt.verify(token, process.env.TOKEN_SERCRET, (err, decoded) => {
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
     if (err || !decoded) {
       return res.status(400).json({ message: 'Not Authorized.' });
     }
 
     const userId = decoded.userId;
 
-    User.findById(id, {}, (err, user) => {
+    User.findById(userId, {}, (err, user) => {
       if (err) next(err);
 
       if (!user) {
