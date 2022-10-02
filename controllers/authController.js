@@ -75,7 +75,7 @@ exports.signIn = [
     }
 
     jwt.sign(
-      { user: { firstName: user.firstName, lastName: user.lastName, email } },
+      { userId: user._id },
       process.env.TOKEN_SECRET,
       { expiresIn: '30d' },
       (err, token) => {
@@ -84,6 +84,12 @@ exports.signIn = [
         // Send back the token to frontend.
         res.json({
           token,
+          user: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            id: user._id,
+          },
         });
       }
     );
