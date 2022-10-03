@@ -7,12 +7,12 @@ const {
   likePost,
 } = require('../controllers/postController');
 
-router.get('/posts', getPosts);
+router.get('/', getPosts);
 
-router.get('/post/:id', getPost);
+router.get('/:id', getPost);
 
-router.post('/post', verifyToken, createPost);
+router.post('/', verifyToken, createPost);
 
-router.post('/post/:id/like', verifyToken, likePost);
+router.post('/:id/like', verifyToken, likePost);
 
 module.exports = router;
