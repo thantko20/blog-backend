@@ -47,3 +47,19 @@ exports.createPost = [
     res.json({ postId: post._id });
   },
 ];
+
+// POST like the post
+exports.likePost = async (req, res) => {
+  const postId = req.params.id;
+
+  const post = await Post.findOne({ _id: postId, likes: req.userId });
+
+  // if already liked, dislike and vice versa
+  const arrayCommand = post ? '$pull' : '$push';
+
+  const updatedPost = await Post.findByIdAndUpdate(postId, {
+    [arrayCommand]: { likes: req.userId },
+  });
+
+  return res.json({ data: updatedPost });
+};
