@@ -95,3 +95,20 @@ exports.signIn = [
     );
   },
 ];
+
+exports.getUser = async (req, res) => {
+  const user = await User.findById(req.userId);
+
+  if (!user) {
+    return res.status(401).json({ message: 'Authentication failed.' });
+  }
+
+  res.json({
+    data: {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      _id: user._id,
+    },
+  });
+};
