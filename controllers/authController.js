@@ -9,14 +9,7 @@ exports.signUp = [
     .withMessage('Email must not be empty.')
     .isEmail()
     .withMessage('Please enter a valid email.')
-    .normalizeEmail()
-    .custom((value) => {
-      return User.findOne({ email: value }).then((user) => {
-        if (user) {
-          return Promise.reject('Email already in use.');
-        }
-      });
-    }),
+    .normalizeEmail(),
   body('firstName')
     .notEmpty()
     .withMessage("First Name can't be empty.")
@@ -38,10 +31,14 @@ exports.signUp = [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const errorMessages = {};
-      errors.array().forEach((err) => (errorMessages[err.param] = err.msg));
-      res.status(400).json({ errors: errorMessages });
+      res.status(400).json({ message: 'Validation failed. Try again.' });
       return;
+    }
+
+    const user = await User.findOne({ email: req.body.email });
+
+    if (user) {
+      return res.status(400).json({ message: 'Email already in use.' });
     }
 
     const hashPassword = await genHash(req.body.password);
