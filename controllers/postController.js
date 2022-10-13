@@ -7,7 +7,7 @@ exports.getPosts = async (req, res) => {
 
   const posts = await Post.find()
     .sort({ [fieldName]: sortOrder })
-    .populate('author', ['firstName', 'lastName', '_id']);
+    .populate('author', ['firstName', 'lastName', '_id', 'fullname']);
 
   res.json({ data: posts });
 };
@@ -15,7 +15,11 @@ exports.getPosts = async (req, res) => {
 // GET get a single post
 exports.getPost = async (req, res) => {
   const id = req.params.id;
-  const post = await Post.findById(id);
+  const post = await Post.findById(id).populate('author', [
+    'firstName',
+    'lastName',
+    'fullname',
+  ]);
 
   res.json({ data: post });
 };

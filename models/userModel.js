@@ -6,6 +6,12 @@ const UserSchema = new mongoose.Schema({
   lastName: { type: String, required: true, minlength: 2 },
 });
 
+UserSchema.virtual('fullname').get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+UserSchema.set('toJSON', { getters: true });
+
 const User = mongoose.model('User', UserSchema);
 
 module.exports = User;
