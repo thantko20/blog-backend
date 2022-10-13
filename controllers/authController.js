@@ -51,6 +51,7 @@ exports.signUp = [
     });
 
     await newUser.save();
+    res.json({ message: 'Sign Up Successful.' });
   },
 ];
 

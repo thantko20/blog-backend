@@ -3,7 +3,11 @@ const Post = require('../models/postModel');
 
 // GET get posts
 exports.getPosts = async (req, res) => {
-  const posts = await Post.find().sort({ createdAt: 'desc' });
+  const { fieldName = 'createdAt', sortOrder = 'desc' } = req.query;
+
+  const posts = await Post.find()
+    .sort({ [fieldName]: sortOrder })
+    .populate('author', ['firstName', 'lastName', '_id']);
 
   res.json({ data: posts });
 };
@@ -25,19 +29,21 @@ exports.createPost = [
     .isLength({ min: 2 })
     .withMessage('Title should have at least 2 characters')
     .escape(),
-  body('body').notEmpty().withMessage('Blog content must not be empty'),
+  body('content').notEmpty().withMessage('Blog content must not be empty'),
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
       const errorMessages = {};
       errors.array().forEach((err) => (errorMessages[err.param] = err.msg));
-      return res.status(400).json({ errors: errorMessages });
+      return res
+        .status(400)
+        .json({ message: 'Validation failed. Please try again.' });
     }
 
     const newPost = new Post({
       title: req.body.title,
-      body: req.body.body,
+      content: req.body.content,
       author: req.userId,
       likes: [req.userId],
     });

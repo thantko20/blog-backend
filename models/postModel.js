@@ -5,7 +5,7 @@ const PostSchema = new Schema(
     title: { type: String, required: true },
     author: { type: Types.ObjectId, ref: 'User' },
     likes: [{ type: Types.ObjectId, ref: 'User' }],
-    body: { type: String, required: true },
+    content: { type: String },
   },
   {
     timestamps: true,
