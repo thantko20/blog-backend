@@ -67,9 +67,13 @@ exports.likePost = async (req, res) => {
   // if already liked, dislike and vice versa
   const arrayCommand = post ? '$pull' : '$push';
 
-  const updatedPost = await Post.findByIdAndUpdate(postId, {
-    [arrayCommand]: { likes: req.userId },
-  });
+  const updatedPost = await Post.findByIdAndUpdate(
+    postId,
+    {
+      [arrayCommand]: { likes: req.userId },
+    },
+    { returnDocument: 'after' }
+  ).populate('author', ['firstName', 'lastName', 'fullname']);
 
   return res.json({ data: updatedPost });
 };
