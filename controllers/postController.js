@@ -1,13 +1,39 @@
 const { body, validationResult } = require('express-validator');
 const Post = require('../models/postModel');
+const User = require('../models/userModel');
 
 // GET get posts
 exports.getPosts = async (req, res) => {
-  const { fieldName = 'createdAt', sortOrder = 'desc' } = req.query;
+  const { fieldName = 'createdAt', sortOrder = -1 } = req.query;
 
-  const posts = await Post.find()
-    .sort({ [fieldName]: sortOrder })
-    .populate('author', ['firstName', 'lastName', '_id', 'fullname']);
+  // const posts = await Post.find()
+  //   .sort({ [fieldName]: sortOrder })
+  //   .populate('author', ['firstName', 'lastName', '_id', 'fullname']);
+
+  const posts = await Post.aggregate([
+    {
+      $project: {
+        title: 1,
+        author: 1,
+        likes: 1,
+        content: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        likesCount: { $size: '$likes' },
+      },
+    },
+    {
+      $sort: {
+        [fieldName]: parseInt(sortOrder),
+      },
+    },
+    { $limit: 20 },
+  ]);
+
+  const authorPopulatedPosts = await User.populate(posts, {
+    path: 'author',
+    select: 'firstName lastName _id',
+  });
 
   res.json({ data: posts });
 };
@@ -72,7 +98,7 @@ exports.likePost = async (req, res) => {
     {
       [arrayCommand]: { likes: req.userId },
     },
-    { returnDocument: 'after' }
+    { returnDocument: 'after' },
   ).populate('author', ['firstName', 'lastName', 'fullname']);
 
   return res.json({ data: updatedPost });
