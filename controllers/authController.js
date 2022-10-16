@@ -77,7 +77,7 @@ exports.signIn = [
       process.env.TOKEN_SECRET,
       { expiresIn: '30d' },
       (err, token) => {
-        if (err) next();
+        if (err) next(err);
 
         // Send back the token to frontend.
         res.json({
@@ -86,10 +86,10 @@ exports.signIn = [
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            id: user._id,
+            _id: user._id,
           },
         });
-      }
+      },
     );
   },
 ];
