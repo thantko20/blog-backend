@@ -4,7 +4,9 @@ const { body, validationResult } = require('express-validator');
 exports.getComments = async (req, res) => {
   const postId = req.query.postId;
 
-  const comments = await Comment.find({ postId }).sort({ likes: -1 });
+  const comments = await Comment.find({ postId })
+    .sort({ likes: -1 })
+    .populate('author', ['firstName', 'lastName', 'fullname']);
 
   res.json({ data: comments });
 };
