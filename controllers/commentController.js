@@ -1,18 +1,26 @@
 const Comment = require('../models/commentModel');
 const { body, validationResult } = require('express-validator');
+const { Types } = require('mongoose');
+const User = require('../models/userModel');
 
 exports.getComments = async (req, res) => {
   const postId = req.query.postId;
 
-  const comments = await Comment.find({ postId })
-    .sort({ likes: -1 })
-    .populate('author', ['firstName', 'lastName', 'fullname']);
+  const comments = await Comment.aggregate()
+    .match({ postId: Types.ObjectId(postId) })
+    .addFields({ likesCount: { $size: '$likes' } })
+    .sort({ likesCount: -1 });
 
-  res.json({ data: comments });
+  const authorPopulatedComments = await User.populate(comments, {
+    path: 'author',
+    select: 'firstName lastName fullname',
+  });
+
+  res.json({ data: authorPopulatedComments });
 };
 
 exports.addComment = [
-  body('body').notEmpty().withMessage('Comment should not be empty').trim(),
+  body('content').notEmpty().withMessage('Comment should not be empty').trim(),
   async (req, res) => {
     const errors = validationResult(req);
 
@@ -21,14 +29,14 @@ exports.addComment = [
       errors.array().forEach((err) => {
         errorMessages[err.param] = err.msg;
       });
-      return res.status(400).json({ errors: errorMessages });
+      return res.status(400).json({ message: 'Validation failed.' });
     }
 
     const postId = req.query.postId;
 
     const newComment = new Comment({
+      content: req.body.content,
       author: req.userId,
-      body: req.body.body,
       postId,
       likes: [req.userId],
     });
