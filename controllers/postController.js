@@ -6,36 +6,20 @@ const User = require('../models/userModel');
 exports.getPosts = async (req, res) => {
   const { fieldName = 'createdAt', sortOrder = -1 } = req.query;
 
-  // const posts = await Post.find()
-  //   .sort({ [fieldName]: sortOrder })
-  //   .populate('author', ['firstName', 'lastName', '_id', 'fullname']);
-
-  const posts = await Post.aggregate([
-    {
-      $project: {
-        title: 1,
-        author: 1,
-        likes: 1,
-        content: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        likesCount: { $size: '$likes' },
-      },
-    },
-    {
-      $sort: {
-        [fieldName]: parseInt(sortOrder),
-      },
-    },
-    { $limit: 20 },
-  ]);
+  // Used Aggregation pipeline to
+  // utilize length of likes
+  const posts = await Post.aggregate()
+    .addFields({
+      likesCount: { $size: '$likes' },
+    })
+    .sort({ [fieldName]: parseInt(sortOrder) });
 
   const authorPopulatedPosts = await User.populate(posts, {
     path: 'author',
     select: 'firstName lastName _id',
   });
 
-  res.json({ data: posts });
+  res.json({ data: authorPopulatedPosts });
 };
 
 // GET get a single post
