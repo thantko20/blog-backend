@@ -112,3 +112,49 @@ exports.deletePost = async (req, res) => {
   await Post.findByIdAndDelete(postId);
   res.json({ message: 'Post removed.' });
 };
+
+exports.editPost = [
+  body('title')
+    .notEmpty()
+    .withMessage('Title must not be empty')
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Title should have at least 2 characters')
+    .escape(),
+  body('content').notEmpty().withMessage('Blog content must not be empty'),
+  async (req, res) => {
+    const postId = req.params.id;
+    const authorId = req.query.authorId;
+
+    if (authorId !== req.userId) {
+      return res
+        .status(400)
+        .json({ message: 'You are not authorized to perform this action.' });
+    }
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorMessages = {};
+      errors.array().forEach((err) => (errorMessages[err.param] = err.msg));
+      return res
+        .status(400)
+        .json({ message: 'Validation failed. Please try again.' });
+    }
+
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      {
+        $set: {
+          title: req.body.title,
+          content: req.body.content,
+        },
+      },
+      {
+        returnDocument: 'after',
+      },
+    );
+
+    res.json({ postId });
+  },
+];

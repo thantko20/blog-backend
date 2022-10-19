@@ -6,16 +6,14 @@ const {
   getPost,
   likePost,
   deletePost,
+  editPost,
 } = require('../controllers/postController');
 
 router.get('/', getPosts);
-
-router.get('/:id', getPost);
-
 router.post('/', verifyToken, createPost);
-
+router.get('/:id', getPost);
 router.post('/:id/like', verifyToken, likePost);
-
 router.post('/:id/delete', verifyToken, deletePost);
+router.post('/:id/edit', verifyToken, editPost);
 
 module.exports = router;
