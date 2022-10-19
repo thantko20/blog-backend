@@ -2,6 +2,7 @@ const Comment = require('../models/commentModel');
 const { body, validationResult } = require('express-validator');
 const { Types } = require('mongoose');
 const User = require('../models/userModel');
+const Post = require('../models/postModel');
 
 exports.getComments = async (req, res) => {
   const postId = req.query.postId;
@@ -61,4 +62,32 @@ exports.likeComment = async (req, res) => {
   });
 
   res.redirect(`/api/comments?postId=${updatedComment.postId}`);
+};
+
+exports.deleteComment = async (req, res) => {
+  const commentId = req.params.id;
+  const { postId } = req.query;
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    return res.status(400).json({ message: 'Post does not exist.' });
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    return res.status(400).json({ message: 'Comment does not exist.' });
+  }
+
+  // Post owner and comment owner can delete comment instance
+  if (
+    String(post.author) === req.userId ||
+    String(comment.author) === req.userId
+  ) {
+    await Comment.findByIdAndDelete(commentId);
+    return res.json({ message: 'Comment Deleted.' });
+  }
+
+  return res.json({
+    message: 'You are not authorized to perform this action.',
+  });
 };
