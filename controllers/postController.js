@@ -1,6 +1,9 @@
 const { body, validationResult } = require('express-validator');
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
+const {
+  Types: { ObjectId },
+} = require('mongoose');
 
 // GET get posts
 exports.getPosts = async (req, res) => {
@@ -86,4 +89,26 @@ exports.likePost = async (req, res) => {
   ).populate('author', ['firstName', 'lastName', 'fullname']);
 
   return res.json({ data: updatedPost });
+};
+
+exports.deletePost = async (req, res) => {
+  const postId = req.params.id;
+
+  const post = await Post.findById(postId).populate('author', [
+    'firstName',
+    'lastName',
+  ]);
+
+  if (!post) {
+    return res.status(400).json({ message: 'Post does not exist.' });
+  }
+
+  if (String(post.author._id) !== req.userId) {
+    return res
+      .status(401)
+      .json({ message: 'You are not authorized to perform this action.' });
+  }
+
+  await Post.findByIdAndDelete(postId);
+  res.json({ message: 'Post removed.' });
 };
