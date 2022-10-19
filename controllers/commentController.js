@@ -84,7 +84,7 @@ exports.deleteComment = async (req, res) => {
     String(comment.author) === req.userId
   ) {
     await Comment.findByIdAndDelete(commentId);
-    return res.json({ message: 'Comment Deleted.' });
+    return res.redirect(`/api/comments?postId=${post._id}`);
   }
 
   return res.json({
